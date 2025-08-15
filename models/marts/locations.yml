@@ -1,24 +1,25 @@
-semantic_models:
+models:
   - name: locations
-    description: |
-      Location dimension table. The grain of the table is one row per location.
-    model: ref('locations')
-    defaults:
-      agg_time_dimension: opened_date
-    entities:
-      - name: location
-        type: primary
-        expr: location_id
-    dimensions:
+    description: 店舗概要データマート。各店舗の主要な詳細情報を提供します。店舗1つにつき1行です。
+    columns:
+      - name: location_id
+        description: 店舗マートのユニークキー
+        data_tests:
+          - not_null
+          - unique
+        meta:
+          metrics:
+            location_count:
+              label: 店舗数
+              type: count_distinct
       - name: location_name
-        type: categorical
+        description: 店舗名
+      - name: tax_rate
+        description: 税率
+        meta:
+          metrics:
+            average_tax_rate:
+              label: 平均税率
+              type: average
       - name: opened_date
-        expr: opened_date
-        type: time
-        type_params:
-          time_granularity: day
-    measures:
-      - name: average_tax_rate
-        description: Average tax rate.
-        expr: tax_rate
-        agg: average
+        description: 開店日

@@ -1,24 +1,37 @@
-semantic_models:
-  #The name of the semantic model.
+models:
   - name: supplies
-    description: |
-      Supplies dimension table. The grain of the table is one row per supply and product combination.
-    #The name of the dbt model and schema
-    model: ref('supplies')
-    #Entities. These usually corespond to keys in the table.
-    entities:
-      - name: supply
-        type: primary
-        expr: supply_uuid
-    #Dimensions. Either categorical or time. These add additonal context to metrics. The typical querying pattern is Metric by Dimension.
-    dimensions:
+    description: 供給概要データマート。各供給と製品の組み合わせの詳細情報を提供します。供給と製品の組み合わせ1つにつき1行です。
+    columns:
+      - name: supply_uuid
+        description: 供給のユニークキー
+        data_tests:
+          - not_null
+          - unique
       - name: supply_id
-        type: categorical
+        description: 供給ID
       - name: product_id
-        type: categorical
+        description: 製品を参照する外部キー
       - name: supply_name
-        type: categorical
+        description: 供給名
       - name: supply_cost
-        type: categorical
+        description: 供給コスト
       - name: is_perishable_supply
-        type: categorical
+        description: 生鮮供給かどうかを示すブール値
+    meta:
+      metrics:
+        supply_count:
+          label: 供給数
+          type: count_distinct
+          sql: ${TABLE}.supply_uuid
+        total_supply_cost:
+          label: 総供給コスト
+          type: sum
+          sql: ${TABLE}.supply_cost
+        average_supply_cost:
+          label: 平均供給コスト
+          type: average
+          sql: ${TABLE}.supply_cost
+        perishable_supply_count:
+          label: 生鮮供給数
+          type: count_distinct
+          sql: case when ${TABLE}.is_perishable_supply then ${TABLE}.supply_uuid else null end

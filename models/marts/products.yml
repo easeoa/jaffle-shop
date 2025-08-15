@@ -1,26 +1,39 @@
-semantic_models:
-  #The name of the semantic model.
+models:
   - name: products
-    description: |
-      Product dimension table. The grain of the table is one row per product.
-    #The name of the dbt model and schema
-    model: ref('products')
-    #Entities. These usually corespond to keys in the table.
-    entities:
-      - name: product
-        type: primary
-        expr: product_id
-    #Dimensions. Either categorical or time. These add additonal context to metrics. The typical querying pattern is Metric by Dimension.
-    dimensions:
+    description: 製品概要データマート。各製品の詳細情報を提供します。製品1つにつき1行です。
+    columns:
+      - name: product_id
+        description: 製品のユニークキー
+        data_tests:
+          - not_null
+          - unique
       - name: product_name
-        type: categorical
+        description: 製品名
       - name: product_type
-        type: categorical
+        description: 製品タイプ
       - name: product_description
-        type: categorical
+        description: 製品説明
       - name: is_food_item
-        type: categorical
+        description: 食品アイテムかどうかを示すブール値
       - name: is_drink_item
-        type: categorical
+        description: ドリンクアイテムかどうかを示すブール値
       - name: product_price
-        type: categorical
+        description: 製品価格
+    meta:
+      metrics:
+        product_count:
+          label: 製品数
+          type: count_distinct
+          sql: ${TABLE}.product_id
+        average_product_price:
+          label: 平均製品価格
+          type: average
+          sql: ${TABLE}.product_price
+        food_product_count:
+          label: 食品製品数
+          type: count_distinct
+          sql: case when ${TABLE}.is_food_item then ${TABLE}.product_id else null end
+        drink_product_count:
+          label: ドリンク製品数
+          type: count_distinct
+          sql: case when ${TABLE}.is_drink_item then ${TABLE}.product_id else null end
